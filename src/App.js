@@ -1,14 +1,19 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import SearchBar from './components/SearchBar'
 import SearchResults from './components/SearchResults'
 import Playlist from './components/Playlist'
-import { useEffect } from 'react';
+import LoginButton from './components/LoginButton';
 import Spotify from './services/Spotify';
 
 function App() {
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   useEffect(() => {
-    Spotify.getAccessToken(); // 👈 Ensures access token is extracted after redirect
+    const token = Spotify.getAccessToken();
+    if (token) setIsLoggedIn(true);
   }, []);
+
   const [searchResults, setSearchResults] = useState([])
   const [playlistName, setPlaylistName] = useState('New Playlist')
   const [playlistTracks, setPlaylistTracks] = useState([])
@@ -39,20 +44,25 @@ function App() {
   return (
     <div className="App">
       <h1>MixMuse</h1>
-      <SearchBar onSearch={handleSearch} />
-<SearchResults results={searchResults} onAdd={addTrack} />
-      <div className="App-playlist">
-        <SearchResults results={searchResults} onAdd={addTrack} />
-        <Playlist 
-          name={playlistName}
-          tracks={playlistTracks}
-          onRemove={removeTrack}
-          onNameChange={setPlaylistName}
-          onSave={savePlaylist}
-        />
-      </div>
+  
+      {isLoggedIn ? (
+        <>
+          <SearchBar onSearch={handleSearch} />
+          <div className="App-playlist">
+            <SearchResults results={searchResults} onAdd={addTrack} />
+            <Playlist
+              name={playlistName}
+              tracks={playlistTracks}
+              onRemove={removeTrack}
+              onNameChange={setPlaylistName}
+              onSave={savePlaylist}
+            />
+          </div>
+        </>
+      ) : (
+        <LoginButton />
+      )}
     </div>
-  )
+  );
 }
-
 export default App

@@ -104,3 +104,12 @@ h1 {
   cursor: pointer;
   margin-top: 1rem;
 }
+.LoginButton button {
+  padding: 10px 20px;
+  background-color: #1DB954;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+}
