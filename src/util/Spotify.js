@@ -1,7 +1,7 @@
 let accessToken;
 let userId;
 const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
-const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/#";
+const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/";
 const scope = "playlist-modify-public";
 
 function generateRandomString(length) {
@@ -30,7 +30,7 @@ const Spotify = {
   async getAccessToken() {
     if (accessToken) return accessToken;
   
-    const params = new URLSearchParams(window.location.hash.slice(1));
+    const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
   
     if (!code) {
