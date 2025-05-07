@@ -9,7 +9,7 @@ function SearchBar({ onSearch }) {
 
   return (
     <div className="SearchBar">
-      <label htmlFor="search-input" className="sr-only">Search</label>
+      <label htmlFor="search-input" className="sr-only"></label>
       <input
         id="search-input"
         name="search"

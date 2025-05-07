@@ -2,9 +2,13 @@ import React, { useState } from 'react'
 import SearchBar from './components/SearchBar'
 import SearchResults from './components/SearchResults'
 import Playlist from './components/Playlist'
-import Spotify from './services/Spotify'
+import { useEffect } from 'react';
+import Spotify from './services/Spotify';
 
 function App() {
+  useEffect(() => {
+    Spotify.getAccessToken(); // 👈 Ensures access token is extracted after redirect
+  }, []);
   const [searchResults, setSearchResults] = useState([])
   const [playlistName, setPlaylistName] = useState('New Playlist')
   const [playlistTracks, setPlaylistTracks] = useState([])
