@@ -9,7 +9,15 @@ function SearchBar({ onSearch }) {
 
   return (
     <div className="SearchBar">
-      <input type="text" placeholder="Enter a song, artist, or genre" value={term} onChange={e => setTerm(e.target.value)} />
+      <label htmlFor="search-input" className="sr-only">Search</label>
+      <input
+        id="search-input"
+        name="search"
+        type="text"
+        placeholder="Enter a song, artist, or genre"
+        value={term}
+        onChange={e => setTerm(e.target.value)}
+      />
       <button onClick={handleSearch}>SEARCH</button>
     </div>
   )

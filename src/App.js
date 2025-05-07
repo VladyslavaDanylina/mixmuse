@@ -9,10 +9,12 @@ function App() {
   const [playlistName, setPlaylistName] = useState('New Playlist')
   const [playlistTracks, setPlaylistTracks] = useState([])
 
-  const search = async (term) => {
-    const results = await Spotify.search(term)
-    setSearchResults(results)
-  }
+  const handleSearch = async (term) => {
+    const results = await Spotify.search(term);
+    setSearchResults(results);
+  };  
+
+ 
 
   const addTrack = (track) => {
     if (playlistTracks.find(t => t.id === track.id)) return
@@ -33,7 +35,8 @@ function App() {
   return (
     <div className="App">
       <h1>MixMuse</h1>
-      <SearchBar onSearch={search} />
+      <SearchBar onSearch={handleSearch} />
+<SearchResults results={searchResults} onAdd={addTrack} />
       <div className="App-playlist">
         <SearchResults results={searchResults} onAdd={addTrack} />
         <Playlist 
