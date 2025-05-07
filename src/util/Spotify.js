@@ -1,6 +1,6 @@
 let accessToken;
 let userId;
-const clientId = "2873a116bcf948b1975152029d117629";
+const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const redirectUri =
   "https://mixmuse.netlify.app/" // "http://localhost:3000"; // Must match spotify app setting exactly & include trailing slash.
 
