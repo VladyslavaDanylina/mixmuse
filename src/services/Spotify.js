@@ -1,5 +1,5 @@
-const clientId = '2873a116bcf948b1975152029d117629'
-const redirectUri = 'http://localhost:3000/' // Change when deployed
+const clientId = '2873a116bcf948b1975152029d117629';
+const redirectUri = 'https://mixmuse.netlify.app/'; // Change when deployed
 
 let accessToken
 
