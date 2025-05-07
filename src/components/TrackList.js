@@ -1,12 +1,11 @@
-import React from 'react';
-import Track from './Track';
-import styles from './styles/TrackList.module.css';
+import React from 'react'
+import Track from './Track'
 
 function TrackList({ tracks, onAdd, onRemove, isRemoval }) {
   return (
-    <div className={styles.TrackList}>
+    <div className="TrackList">
       {tracks.map(track => (
-        <Track
+        <Track 
           key={track.id}
           track={track}
           onAdd={onAdd}
@@ -15,7 +14,7 @@ function TrackList({ tracks, onAdd, onRemove, isRemoval }) {
         />
       ))}
     </div>
-  );
+  )
 }
 
-export default TrackList;
+export default TrackList

@@ -1,0 +1,25 @@
+.Track {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .Track-information {
+    display: flex;
+    flex-direction: column;
+    color: white;
+  }
+  
+  .Track-action {
+    font-size: 24px;
+    cursor: pointer;
+    color: #1db954;
+  }
+  
+  .Track-action:hover {
+    color: #1ed760;
+  }
+  
