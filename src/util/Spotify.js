@@ -9,22 +9,44 @@ const Spotify = {
     if (accessToken) {
       return accessToken;
     }
-    // check for access token match
+  
+    const storedToken = localStorage.getItem("spotify_access_token");
+    const tokenExpiry = localStorage.getItem("spotify_token_expiry");
+    const now = new Date().getTime();
+  
+    if (storedToken && tokenExpiry && now < tokenExpiry) {
+      accessToken = storedToken;
+      return accessToken;
+    }
+  
     const accessTokenMatch = window.location.href.match(/access_token=([^&]*)/);
     const expiresInMatch = window.location.href.match(/expires_in=([^&]*)/);
-
+  
     if (accessTokenMatch && expiresInMatch) {
       accessToken = accessTokenMatch[1];
-      accessToken = accessToken.replace("=", ""); // troubleshooting
-      const expiresIn = Number(expiresInMatch[1]);
-      window.setTimeout(() => (accessToken = ""), expiresIn * 1000);
-      window.history.pushState("Access Token", null, "/");
+      const expiresIn = Number(expiresInMatch[1]) * 1000;
+      const expiryTime = new Date().getTime() + expiresIn;
+  
+      // Save in localStorage
+      localStorage.setItem("spotify_access_token", accessToken);
+      localStorage.setItem("spotify_token_expiry", expiryTime);
+  
+      // Auto clear when token expires
+      window.setTimeout(() => {
+        accessToken = "";
+        localStorage.removeItem("spotify_access_token");
+        localStorage.removeItem("spotify_token_expiry");
+      }, expiresIn);
+  
+      // Clean up the URL (very important to avoid infinite redirect)
+      window.history.replaceState({}, document.title, "/mixmuse/");
       return accessToken;
     } else {
       const accessUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&scope=playlist-modify-public&redirect_uri=${redirectUri}`;
       window.location = accessUrl;
     }
   },
+  
 
   getCurrentUserId() {
     if (userId) {
