@@ -29,25 +29,32 @@ function base64UrlEncode(str) {
 const Spotify = {
   async getAccessToken() {
     if (accessToken) return accessToken;
-
+  
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-
+  
     if (!code) {
       const codeVerifier = generateRandomString(128);
       localStorage.setItem("code_verifier", codeVerifier);
-
+  
       const hashed = await sha256(codeVerifier);
       const codeChallenge = base64UrlEncode(hashed);
-
+  
       const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
-
+  
       window.location = authUrl;
       return;
     }
-
+  
     const codeVerifier = localStorage.getItem("code_verifier");
-
+  
+    if (!codeVerifier) {
+      console.error("Missing code_verifier. Restarting auth flow.");
+      localStorage.removeItem("code_verifier");
+      window.location.href = "/";
+      return;
+    }
+  
     const body = new URLSearchParams({
       client_id: clientId,
       grant_type: "authorization_code",
@@ -55,7 +62,7 @@ const Spotify = {
       redirect_uri: redirectUri,
       code_verifier: codeVerifier
     });
-
+  
     const response = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: {
@@ -63,18 +70,17 @@ const Spotify = {
       },
       body: body
     });
-
+  
     const data = await response.json();
-
+  
     if (data.access_token) {
       accessToken = data.access_token;
-      window.history.replaceState({}, document.title, "/mixmuse"); // Clear URL
+      window.history.replaceState({}, document.title, "/mixmuse");
       return accessToken;
     } else {
       console.error("Token exchange failed", data);
     }
   },
-
   async getCurrentUserId() {
     if (userId) return userId;
 
