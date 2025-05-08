@@ -1,50 +1,43 @@
 .Track {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 1rem;
-  border-radius: 8px;
+  justify-content: space-between;
+  background: transparent;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
 }
 
 .Track-left {
   display: flex;
   align-items: center;
-  margin-right: 2rem;
 }
 
 .Track-album-art {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
+  margin-left: 10px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
-.Track-information {
-  flex-grow: 1;
+.Track-volume {
+  margin-left: 10px;
+  width: 80px;
 }
 
-.Track-play-btn,
+.Track-play-button,
 .Track-action {
   background: transparent;
   border: none;
-  color: white;
-  font-size: 1.2rem;
+  font-size: 20px;
   cursor: pointer;
-  margin-right: 20px;
-  margin-left: 20px;
-  transition: opacity 0.2s;
+  color: #fff;
+  padding: 5px;
+  margin: 0 5px;
+  transition: color 0.3s;
 }
 
-.Track-play-btn:hover,
+.Track-play-button:hover,
 .Track-action:hover {
-  opacity: 0.7;
-}
-
-
-
-.Track-audio {
-  margin: 1rem;
-  width: 100%;
-  max-width: 300px;
+  color: #1db954; /* Spotify green */
 }
