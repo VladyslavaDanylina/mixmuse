@@ -10,7 +10,6 @@ import Spotify from "../../util/Spotify";
 class App extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
       accessToken: null,
       searchResults: [],
@@ -30,9 +29,9 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.getUserPlaylists();
     Spotify.getAccessToken().then((token) => {
       this.setState({ accessToken: token });
+      this.getUserPlaylists();
     });
   }
 
@@ -43,18 +42,13 @@ class App extends React.Component {
   }
 
   addTrack(track) {
-    const tracks = this.state.playlistTracks;
-    if (tracks.find((savedTrack) => savedTrack.id === track.id)) {
-      return;
-    }
-    this.setState({ playlistTracks: [...tracks, track] });
+    if (this.state.playlistTracks.find((t) => t.id === track.id)) return;
+    this.setState({ playlistTracks: [...this.state.playlistTracks, track] });
   }
 
   removeTrack(track) {
-    const tracks = this.state.playlistTracks.filter(
-      (currentTrack) => track.id !== currentTrack.id
-    );
-    this.setState({ playlistTracks: tracks });
+    const updated = this.state.playlistTracks.filter((t) => t.id !== track.id);
+    this.setState({ playlistTracks: updated });
   }
 
   updatePlaylistName(name) {
@@ -78,8 +72,8 @@ class App extends React.Component {
   }
 
   search(term) {
-    Spotify.search(term).then((searchResults) => {
-      this.setState({ searchResults });
+    Spotify.search(term).then((results) => {
+      this.setState({ searchResults: results });
     });
   }
 
@@ -120,10 +114,7 @@ class App extends React.Component {
           </div>
           <PlaylistList playlists={playlists} />
           {accessToken && currentlyPlayingUri && (
-            <SpotifyPlayer
-              accessToken={accessToken}
-              trackUri={currentlyPlayingUri}
-            />
+            <SpotifyPlayer accessToken={accessToken} trackUri={currentlyPlayingUri} />
           )}
         </div>
       </div>
@@ -132,4 +123,3 @@ class App extends React.Component {
 }
 
 export default App;
-

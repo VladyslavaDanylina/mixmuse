@@ -1,12 +1,10 @@
 let accessToken;
 let cachedUserId;
 
-const clientId = "2873a116bcf948b1975152029d117629"; // Replace with your real client ID
-const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/"; // Must exactly match Spotify dashboard
-const scope = "streaming user-read-email user-read-private playlist-modify-public user-read-playback-state user-modify-playback-state";
+const clientId = "2873a116bcf948b1975152029d117629"; // Your real client ID
+const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/";
+const scope = "streaming user-read-email user-read-private playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state";
 
-
-// Utilities
 function generateRandomString(length) {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const values = new Uint32Array(length);
@@ -25,7 +23,6 @@ function base64UrlEncode(buffer) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-// Spotify object
 const Spotify = {
   async getAccessToken() {
     if (accessToken) return accessToken;
@@ -44,14 +41,13 @@ const Spotify = {
 
       window.location = authUrl;
       return;
-    };
+    }
 
     const codeVerifier = localStorage.getItem("spotify_code_verifier");
     if (!codeVerifier) {
-      console.error("Missing code_verifier. Restarting auth flow.");
       window.location.href = redirectUri;
       return;
-    };
+    }
 
     const body = new URLSearchParams({
       client_id: clientId,
@@ -127,8 +123,8 @@ const Spotify = {
       artist: track.artists[0].name,
       album: track.album.name,
       uri: track.uri,
-      albumImage: track.album.images[0]?.url || '',      // ✅ album cover
-      previewUrl: track.preview_url || '',               // ✅ audio preview
+      albumImage: track.album.images[0]?.url || '',
+      previewUrl: track.preview_url || '',
     }));
   },
 
@@ -138,19 +134,30 @@ const Spotify = {
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
 
-    const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name }),
-    });
+    // Check if playlist exists
+    const playlists = await this.getUserPlaylists();
+    const existingPlaylist = playlists.find(p => p.playlistName === name);
 
-    const playlist = await createRes.json();
-    const playlistId = playlist.id;
+    let playlistId;
 
-    await fetch(`https://api.spotify.com/v1/users/${userId}/playlists/${playlistId}/tracks`, {
+    if (existingPlaylist) {
+      playlistId = existingPlaylist.playlistId;
+    } else {
+      const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name }),
+      });
+
+      const newPlaylist = await createRes.json();
+      playlistId = newPlaylist.id;
+    }
+
+    // Add tracks to the playlist (existing or new)
+    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
