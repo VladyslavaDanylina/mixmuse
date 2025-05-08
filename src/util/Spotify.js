@@ -44,14 +44,14 @@ const Spotify = {
 
       window.location = authUrl;
       return;
-    }
+    };
 
     const codeVerifier = localStorage.getItem("spotify_code_verifier");
     if (!codeVerifier) {
       console.error("Missing code_verifier. Restarting auth flow.");
       window.location.href = redirectUri;
       return;
-    }
+    };
 
     const body = new URLSearchParams({
       client_id: clientId,
