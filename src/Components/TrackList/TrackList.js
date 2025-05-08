@@ -1,23 +1,31 @@
 import React from "react";
-import Track from "../Track/Track.js";
+import PropTypes from "prop-types";
+import Track from "../Track/Track";
 import "./TrackList.css";
 
 export default class TrackList extends React.Component {
   render() {
+    const { tracks = [], onAdd, onRemove, isRemoval } = this.props;
+
     return (
       <div className="TrackList">
-        {this.props.tracks.map((track) => {
-          return (
-            <Track
-              track={track}
-              key={track.id}
-              onAdd={this.props.onAdd}
-              onRemove={this.props.onRemove}
-              isRemoval={this.props.isRemoval}
-            />
-          );
-        })}
+        {tracks.map((track) => (
+          <Track
+            key={track.id}
+            track={track}
+            onAdd={onAdd}
+            onRemove={onRemove}
+            isRemoval={isRemoval}
+          />
+        ))}
       </div>
     );
   }
 }
+
+TrackList.propTypes = {
+  tracks: PropTypes.arrayOf(PropTypes.object),
+  onAdd: PropTypes.func,
+  onRemove: PropTypes.func,
+  isRemoval: PropTypes.bool,
+};

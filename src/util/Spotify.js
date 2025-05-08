@@ -112,22 +112,25 @@ const Spotify = {
 
   async search(term) {
     const token = await this.getAccessToken();
-
+  
     const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-
+  
     const json = await response.json();
     if (!json.tracks) return [];
-
+  
     return json.tracks.items.map(track => ({
       id: track.id,
       name: track.name,
       artist: track.artists[0].name,
       album: track.album.name,
       uri: track.uri,
+      albumImage: track.album.images[0]?.url || '',      // ✅ album cover
+      previewUrl: track.preview_url || '',               // ✅ audio preview
     }));
-  },
+  }
+  
 
   async savePlayList(name, trackUris) {
     if (!name || !trackUris.length) return;
