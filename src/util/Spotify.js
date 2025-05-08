@@ -129,8 +129,7 @@ const Spotify = {
       albumImage: track.album.images[0]?.url || '',      // ✅ album cover
       previewUrl: track.preview_url || '',               // ✅ audio preview
     }));
-  }
-  
+  },
 
   async savePlayList(name, trackUris) {
     if (!name || !trackUris.length) return;
