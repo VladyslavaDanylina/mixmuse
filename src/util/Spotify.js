@@ -3,7 +3,8 @@ let cachedUserId;
 
 const clientId = "2873a116bcf948b1975152029d117629"; // Replace with your real client ID
 const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/"; // Must exactly match Spotify dashboard
-const scope = "playlist-modify-public";
+const scope = "streaming user-read-email user-read-private playlist-modify-public user-read-playback-state user-modify-playback-state";
+
 
 // Utilities
 function generateRandomString(length) {

@@ -5,7 +5,7 @@ import "./TrackList.css";
 
 export default class TrackList extends React.Component {
   render() {
-    const { tracks = [], onAdd, onRemove, isRemoval } = this.props;
+    const { tracks = [], onAdd, onRemove, isRemoval, onPlay } = this.props;
 
     return (
       <div className="TrackList">
@@ -16,6 +16,7 @@ export default class TrackList extends React.Component {
             onAdd={onAdd}
             onRemove={onRemove}
             isRemoval={isRemoval}
+            onPlay={onPlay}
           />
         ))}
       </div>
@@ -28,4 +29,5 @@ TrackList.propTypes = {
   onAdd: PropTypes.func,
   onRemove: PropTypes.func,
   isRemoval: PropTypes.bool,
+  onPlay: PropTypes.func,
 };

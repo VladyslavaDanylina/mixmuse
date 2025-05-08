@@ -8,22 +8,6 @@ class Track extends React.Component {
     this.removeTrack = this.removeTrack.bind(this);
   }
 
-  renderAction() {
-    if (this.props.isRemoval) {
-      return (
-        <button className="Track-action" onClick={this.removeTrack}>
-          -
-        </button>
-      );
-    } else {
-      return (
-        <button className="Track-action" onClick={this.addTrack}>
-          +
-        </button>
-      );
-    }
-  }
-
   addTrack() {
     this.props.onAdd(this.props.track);
   }
@@ -32,28 +16,50 @@ class Track extends React.Component {
     this.props.onRemove(this.props.track);
   }
 
+  renderAction() {
+    const { isRemoval } = this.props;
+    return (
+      <button
+        className="Track-action"
+        onClick={isRemoval ? this.removeTrack : this.addTrack}
+      >
+        {isRemoval ? "−" : "+"}
+      </button>
+    );
+  }
+
   render() {
-    const { name, artist, album, albumImage, previewUrl } = this.props.track;
+    const { name, artist, album, albumImage, previewUrl, uri } = this.props.track;
 
     return (
       <div className="Track">
         {albumImage && (
           <img
             src={albumImage}
-            alt={`${name} album art`}
+            alt={`${name} album cover`}
             className="Track-album-art"
           />
         )}
+
         <div className="Track-information">
           <h3>{name}</h3>
           <p>{artist} | {album}</p>
-          {previewUrl && (
-            <audio controls className="Track-audio">
-              <source src={previewUrl} type="audio/mpeg" />
-              Your browser does not support the audio element.
-            </audio>
-          )}
+
+          <div className="Track-controls">
+            {previewUrl && (
+              <audio controls className="Track-audio">
+                <source src={previewUrl} type="audio/mpeg" />
+                Your browser does not support the audio element.
+              </audio>
+            )}
+            {this.props.onPlay && uri && (
+              <button onClick={() => this.props.onPlay(uri)} className="Track-play-btn">
+                ▶ Play
+              </button>
+            )}
+          </div>
         </div>
+
         {this.renderAction()}
       </div>
     );
