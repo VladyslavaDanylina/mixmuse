@@ -1,20 +1,46 @@
+.Track {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.Track-left {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+
 .Track-album-art {
   width: 64px;
   height: 64px;
   object-fit: cover;
-  margin-right: 10px;
-  border-radius: 4px;
-}
-
-.Track {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
+  border-radius: 6px;
 }
 
 .Track-information {
   flex-grow: 1;
 }
+
+.Track-play-btn,
+.Track-action {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: opacity 0.2s;
+}
+
+.Track-play-btn:hover,
+.Track-action:hover {
+  opacity: 0.7;
+}
+
+
 
 .Track-audio {
   margin-top: 8px;

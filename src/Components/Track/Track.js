@@ -33,31 +33,35 @@ class Track extends React.Component {
 
     return (
       <div className="Track">
-        {albumImage && (
-          <img
-            src={albumImage}
-            alt={`${name} album cover`}
-            className="Track-album-art"
-          />
-        )}
+        <div className="Track-left">
+          {this.props.onPlay && uri && (
+            <button
+              onClick={() => this.props.onPlay(uri)}
+              className="Track-play-btn"
+            >
+              ▶
+            </button>
+          )}
+
+          {albumImage && (
+            <img
+              src={albumImage}
+              alt={`${name} album cover`}
+              className="Track-album-art"
+            />
+          )}
+        </div>
 
         <div className="Track-information">
           <h3>{name}</h3>
           <p>{artist} | {album}</p>
 
-          <div className="Track-controls">
-            {previewUrl && (
-              <audio controls className="Track-audio">
-                <source src={previewUrl} type="audio/mpeg" />
-                Your browser does not support the audio element.
-              </audio>
-            )}
-            {this.props.onPlay && uri && (
-              <button onClick={() => this.props.onPlay(uri)} className="Track-play-btn">
-                ▶ Play
-              </button>
-            )}
-          </div>
+          {previewUrl && (
+            <audio controls className="Track-audio">
+              <source src={previewUrl} type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+          )}
         </div>
 
         {this.renderAction()}

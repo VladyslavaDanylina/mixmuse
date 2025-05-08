@@ -16,7 +16,7 @@ export default class TrackList extends React.Component {
             onAdd={onAdd}
             onRemove={onRemove}
             isRemoval={isRemoval}
-            onPlay={onPlay}
+            onPlay={onPlay} // ✅ Properly passed here
           />
         ))}
       </div>
