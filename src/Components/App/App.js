@@ -27,7 +27,10 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.getUserPlaylists();
+    // Ensure user is authenticated and playlists are fetched
+    Spotify.getAccessToken().then(() => {
+      this.getUserPlaylists();
+    });
   }
 
   getUserPlaylists() {
@@ -58,9 +61,8 @@ class App extends React.Component {
   }
 
   addTrack(track) {
-    if (this.state.playlistTracks.find((savedTrack) => savedTrack.id === track.id)) {
-      return;
-    }
+    if (this.state.playlistTracks.find(t => t.id === track.id)) return;
+
     this.setState((prevState) => ({
       playlistTracks: [...prevState.playlistTracks, track],
     }));
@@ -68,9 +70,7 @@ class App extends React.Component {
 
   removeTrack(track) {
     this.setState((prevState) => ({
-      playlistTracks: prevState.playlistTracks.filter(
-        (currentTrack) => track.id !== currentTrack.id
-      ),
+      playlistTracks: prevState.playlistTracks.filter(t => t.id !== track.id),
     }));
   }
 
@@ -80,18 +80,18 @@ class App extends React.Component {
 
   savePlaylist() {
     const { playlistName, playlistTracks, selectedPlaylistId } = this.state;
-    const trackUris = playlistTracks.map((track) => track.uri);
+    const trackUris = playlistTracks.map((t) => t.uri);
 
     if (!trackUris.length) {
-      alert("Your playlist is empty! Please add tracks.");
+      alert("Your playlist is empty. Add some tracks first!");
       return;
     }
 
-    const savePromise = selectedPlaylistId
+    const action = selectedPlaylistId
       ? Spotify.updatePlaylist(selectedPlaylistId, playlistName, trackUris)
       : Spotify.savePlayList(playlistName, trackUris);
 
-    savePromise
+    action
       .then(() => {
         this.getUserPlaylists();
         this.setState({
@@ -101,7 +101,7 @@ class App extends React.Component {
         });
       })
       .catch((err) => {
-        console.error("Error saving playlist:", err);
+        console.error("Error saving/updating playlist:", err);
       });
   }
 
@@ -116,7 +116,12 @@ class App extends React.Component {
   }
 
   render() {
-    const { searchResults, playlistName, playlistTracks, playlists } = this.state;
+    const {
+      searchResults,
+      playlistName,
+      playlistTracks,
+      playlists,
+    } = this.state;
 
     return (
       <div>

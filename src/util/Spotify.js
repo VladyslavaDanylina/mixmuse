@@ -191,6 +191,7 @@ const Spotify = {
       body: JSON.stringify({ uris: trackUris }),
     });
   },
+
   async updatePlaylist(playlistId, name, trackUris) {
     if (!playlistId || !trackUris.length) return;
 
@@ -217,7 +218,6 @@ const Spotify = {
       body: JSON.stringify({ uris: trackUris }),
     });
   },
-
 };
 
 export default Spotify;
