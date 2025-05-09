@@ -1,7 +1,7 @@
 let accessToken;
 let cachedUserId;
 
-const clientId = "2873a116bcf948b1975152029d117629"; // Your real client ID
+const clientId = "2873a116bcf948b1975152029d117629";
 const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/";
 const scope = "streaming user-read-email user-read-private playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state";
 
@@ -83,49 +83,74 @@ const Spotify = {
     if (cachedUserId) return cachedUserId;
 
     const token = await this.getAccessToken();
-    const response = await fetch("https://api.spotify.com/v1/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    if (!token) return null;
 
-    const data = await response.json();
-    cachedUserId = data.id;
-    return cachedUserId;
+    try {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+      cachedUserId = data.id;
+      return cachedUserId;
+    } catch (error) {
+      console.error("Error fetching user ID", error);
+      return null;
+    }
   },
 
   async getUserPlaylists() {
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
 
-    const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    if (!token || !userId) {
+      console.error("Missing token or user ID for playlist fetch");
+      return [];
+    }
 
-    const json = await response.json();
-    return (json.items || []).map(p => ({
-      playlistName: p.name,
-      playlistId: p.id,
-    }));
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch playlists");
+
+      const json = await response.json();
+      return (json.items || []).map(p => ({
+        playlistName: p.name,
+        playlistId: p.id,
+      }));
+    } catch (error) {
+      console.error("Error fetching playlists", error);
+      return [];
+    }
   },
 
   async search(term) {
     const token = await this.getAccessToken();
+    if (!token) return [];
 
-    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const json = await response.json();
-    if (!json.tracks) return [];
+      const json = await response.json();
+      if (!json.tracks) return [];
 
-    return json.tracks.items.map(track => ({
-      id: track.id,
-      name: track.name,
-      artist: track.artists[0].name,
-      album: track.album.name,
-      uri: track.uri,
-      albumImage: track.album.images[0]?.url || '',
-      previewUrl: track.preview_url || '',
-    }));
+      return json.tracks.items.map(track => ({
+        id: track.id,
+        name: track.name,
+        artist: track.artists[0].name,
+        album: track.album.name,
+        uri: track.uri,
+        albumImage: track.album.images[0]?.url || '',
+        previewUrl: track.preview_url || '',
+      }));
+    } catch (error) {
+      console.error("Search failed", error);
+      return [];
+    }
   },
 
   async savePlayList(name, trackUris) {
@@ -133,38 +158,41 @@ const Spotify = {
 
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
+    if (!token || !userId) return;
 
-    // Check if playlist exists
-    const playlists = await this.getUserPlaylists();
-    const existingPlaylist = playlists.find(p => p.playlistName === name);
+    try {
+      const playlists = await this.getUserPlaylists();
+      const existingPlaylist = playlists.find(p => p.playlistName === name);
 
-    let playlistId;
+      let playlistId;
 
-    if (existingPlaylist) {
-      playlistId = existingPlaylist.playlistId;
-    } else {
-      const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+      if (existingPlaylist) {
+        playlistId = existingPlaylist.playlistId;
+      } else {
+        const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name }),
+        });
+
+        const newPlaylist = await createRes.json();
+        playlistId = newPlaylist.id;
+      }
+
+      await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ uris: trackUris }),
       });
-
-      const newPlaylist = await createRes.json();
-      playlistId = newPlaylist.id;
+    } catch (error) {
+      console.error("Failed to save playlist", error);
     }
-
-    // Add tracks to the playlist (existing or new)
-    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ uris: trackUris }),
-    });
   },
 };
 
