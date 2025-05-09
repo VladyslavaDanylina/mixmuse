@@ -14,6 +14,7 @@ class App extends React.Component {
       playlistName: "New Playlist Name",
       playlistTracks: [],
       playlists: [],
+      selectedPlaylistId: null,
     };
 
     this.addTrack = this.addTrack.bind(this);
@@ -22,6 +23,7 @@ class App extends React.Component {
     this.savePlaylist = this.savePlaylist.bind(this);
     this.search = this.search.bind(this);
     this.getUserPlaylists = this.getUserPlaylists.bind(this);
+    this.selectPlaylist = this.selectPlaylist.bind(this);
   }
 
   componentDidMount() {
@@ -35,6 +37,23 @@ class App extends React.Component {
       })
       .catch((err) => {
         console.error("Failed to fetch playlists:", err);
+      });
+  }
+
+  selectPlaylist(playlistId) {
+    const selected = this.state.playlists.find(p => p.playlistId === playlistId);
+    if (!selected) return;
+
+    Spotify.getPlaylistTracks(playlistId)
+      .then((tracks) => {
+        this.setState({
+          selectedPlaylistId: playlistId,
+          playlistName: selected.playlistName,
+          playlistTracks: tracks,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to load selected playlist tracks:", err);
       });
   }
 
@@ -60,18 +79,25 @@ class App extends React.Component {
   }
 
   savePlaylist() {
-    const trackUris = this.state.playlistTracks.map((track) => track.uri);
+    const { playlistName, playlistTracks, selectedPlaylistId } = this.state;
+    const trackUris = playlistTracks.map((track) => track.uri);
+
     if (!trackUris.length) {
       alert("Your playlist is empty! Please add tracks.");
       return;
     }
 
-    Spotify.savePlayList(this.state.playlistName, trackUris)
+    const savePromise = selectedPlaylistId
+      ? Spotify.updatePlaylist(selectedPlaylistId, playlistName, trackUris)
+      : Spotify.savePlayList(playlistName, trackUris);
+
+    savePromise
       .then(() => {
         this.getUserPlaylists();
         this.setState({
           playlistName: "New Playlist Name",
           playlistTracks: [],
+          selectedPlaylistId: null,
         });
       })
       .catch((err) => {
@@ -100,10 +126,7 @@ class App extends React.Component {
         <div className="App">
           <SearchBar onSearch={this.search} />
           <div className="App-playlist">
-            <SearchResults
-              searchResults={searchResults}
-              onAdd={this.addTrack}
-            />
+            <SearchResults searchResults={searchResults} onAdd={this.addTrack} />
             <Playlist
               playlistName={playlistName}
               playlistTracks={playlistTracks}
@@ -112,7 +135,7 @@ class App extends React.Component {
               onSave={this.savePlaylist}
             />
           </div>
-          <PlaylistList playlists={playlists} />
+          <PlaylistList playlists={playlists} onSelect={this.selectPlaylist} />
         </div>
       </div>
     );

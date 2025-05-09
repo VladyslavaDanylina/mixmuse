@@ -4,6 +4,7 @@
   overflow-y: scroll;
   padding-top: 1rem;
   padding-left: 2rem;
+  padding-right: 2rem; 
   background-color: rgba(1, 12, 63, 0.7);
 }
 

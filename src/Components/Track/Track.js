@@ -8,22 +8,6 @@ class Track extends React.Component {
     this.removeTrack = this.removeTrack.bind(this);
   }
 
-  renderAction() {
-    if (this.props.isRemoval) {
-      return (
-        <button className="Track-action" onClick={this.removeTrack}>
-          -
-        </button>
-      );
-    } else {
-      return (
-        <button className="Track-action" onClick={this.addTrack}>
-          +
-        </button>
-      );
-    }
-  }
-
   addTrack() {
     this.props.onAdd(this.props.track);
   }
@@ -32,16 +16,25 @@ class Track extends React.Component {
     this.props.onRemove(this.props.track);
   }
 
+  renderAction() {
+    return (
+      <button className="Track-action" onClick={this.props.isRemoval ? this.removeTrack : this.addTrack}>
+        {this.props.isRemoval ? "-" : "+"}
+      </button>
+    );
+  }
+
   render() {
-    const { name, artist, album, albumImage, previewUrl } = this.props.track;
+    const { name, artist, album, albumCover, previewUrl } = this.props.track;
 
     return (
       <div className="Track">
-        {albumImage && (
+        {albumCover && (
           <img
-            src={albumImage}
-            alt={`${name} album art`}
+            src={albumCover}
+            alt={`${name} album cover`}
             className="Track-album-art"
+            style={{ width: '64px', height: '64px', marginRight: '10px' }}
           />
         )}
         <div className="Track-information">
@@ -61,3 +54,4 @@ class Track extends React.Component {
 }
 
 export default Track;
+

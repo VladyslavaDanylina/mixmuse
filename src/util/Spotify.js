@@ -31,7 +31,6 @@ const Spotify = {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
 
-    // 1. If there's no code, start auth
     if (!code) {
       const codeVerifier = generateRandomString(128);
       localStorage.setItem("spotify_code_verifier", codeVerifier);
@@ -42,10 +41,9 @@ const Spotify = {
       const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
 
       window.location = authUrl;
-      return; // Exit function while redirecting
+      return;
     }
 
-    // 2. If redirected back with code, exchange it
     const codeVerifier = localStorage.getItem("spotify_code_verifier");
     if (!codeVerifier) {
       console.error("Missing code_verifier. Restarting auth.");
@@ -72,11 +70,7 @@ const Spotify = {
 
       if (data.access_token) {
         accessToken = data.access_token;
-
-        // Optional: Store for session reuse
         localStorage.removeItem("spotify_code_verifier");
-
-        // Remove code from URL
         window.history.replaceState({}, document.title, redirectUri);
         return accessToken;
       } else {
@@ -125,6 +119,29 @@ const Spotify = {
     }));
   },
 
+  async getPlaylistTracks(playlistId) {
+    const token = await this.getAccessToken();
+    if (!token || !playlistId) return [];
+
+    const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await response.json();
+    if (!data.items) return [];
+
+    return data.items
+      .filter(item => item.track)
+      .map(({ track }) => ({
+        id: track.id,
+        name: track.name,
+        artist: track.artists[0]?.name || "Unknown",
+        album: track.album.name,
+        uri: track.uri,
+        albumCover: track.album.images[0]?.url,
+      }));
+  },
+
   async search(term) {
     const token = await this.getAccessToken();
     if (!token) return [];
@@ -142,6 +159,7 @@ const Spotify = {
       artist: track.artists[0].name,
       album: track.album.name,
       uri: track.uri,
+      albumCover: track.album.images[0]?.url,
     }));
   },
 
@@ -173,6 +191,33 @@ const Spotify = {
       body: JSON.stringify({ uris: trackUris }),
     });
   },
+  async updatePlaylist(playlistId, name, trackUris) {
+    if (!playlistId || !trackUris.length) return;
+
+    const token = await this.getAccessToken();
+    if (!token) return;
+
+    // Update playlist name (optional)
+    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    // Replace tracks
+    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uris: trackUris }),
+    });
+  },
+
 };
 
 export default Spotify;
