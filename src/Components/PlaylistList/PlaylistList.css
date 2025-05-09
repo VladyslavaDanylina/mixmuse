@@ -1,9 +1,10 @@
 .PlaylistList {
+  border-radius: 100px;
   margin-top: 20px;
   height: 250px;
   overflow-y: scroll;
   padding: 2rem 2rem;
-  background-color: rgba(1, 12, 63, 0.7);
+  background-color: rgba(1, 63, 33, 0.7);
 }
 
 ::-webkit-scrollbar {
