@@ -7,10 +7,10 @@
 }
 
 .SearchBar input {
-  width: 287px;
-  padding: .88rem 0;
+  width: 60%;
+  padding: 1rem 0;
   border: 1px solid #fff;
-  border-radius: 3px;
+  border-radius: 20px;
   margin-bottom: 2.22rem;
   color: #010c3f;
   text-align: center;

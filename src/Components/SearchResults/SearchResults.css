@@ -5,8 +5,8 @@
   padding-top: 1rem;
   padding-left: 2rem;
   padding-right: 2rem; 
-  border-radius: 100px;
-  background-color: rgba(1, 63, 44, 0.7);
+  border-radius: 20px;
+  background-color: rgba(1, 63, 33, 0.356);
 }
 
 ::-webkit-scrollbar {
