@@ -10,13 +10,14 @@ import Spotify from "../../util/Spotify";
 class App extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       accessToken: null,
       searchResults: [],
       playlistName: "New Playlist Name",
       playlistTracks: [],
       playlists: [],
-      currentlyPlayingUri: null,
+      currentlyPlayingUri: null, // ⬅️ new state for playback
     };
 
     this.addTrack = this.addTrack.bind(this);
@@ -28,75 +29,57 @@ class App extends React.Component {
     this.setPlayingTrack = this.setPlayingTrack.bind(this);
   }
 
-  async componentDidMount() {
-    try {
-      const token = await Spotify.getAccessToken();
-      if (!token) {
-        console.error("Access token not found");
-        return;
-      }
-
+  componentDidMount() {
+    this.getUserPlaylists();
+    Spotify.getAccessToken().then((token) => {
       this.setState({ accessToken: token });
-
-      const playlists = await Spotify.getUserPlaylists();
-      this.setState({ playlists });
-    } catch (error) {
-      console.error("Error during Spotify auth or playlist fetch:", error);
-    }
+    });
   }
 
-  async getUserPlaylists() {
-    try {
-      const playlists = await Spotify.getUserPlaylists();
+  getUserPlaylists() {
+    Spotify.getUserPlaylists().then((playlists) => {
       this.setState({ playlists });
-    } catch (error) {
-      console.error("Failed to fetch playlists:", error);
-    }
+    });
   }
 
   addTrack(track) {
-    const exists = this.state.playlistTracks.some((t) => t.id === track.id);
-    if (exists) return;
-    this.setState((prevState) => ({
-      playlistTracks: [...prevState.playlistTracks, track],
-    }));
+    const tracks = this.state.playlistTracks;
+    if (tracks.find((savedTrack) => savedTrack.id === track.id)) {
+      return;
+    }
+    this.setState({ playlistTracks: [...tracks, track] });
   }
 
   removeTrack(track) {
-    this.setState((prevState) => ({
-      playlistTracks: prevState.playlistTracks.filter((t) => t.id !== track.id),
-    }));
+    const tracks = this.state.playlistTracks.filter(
+      (currentTrack) => track.id !== currentTrack.id
+    );
+    this.setState({ playlistTracks: tracks });
   }
 
   updatePlaylistName(name) {
     this.setState({ playlistName: name });
   }
 
-  async savePlaylist() {
-    const { playlistName, playlistTracks } = this.state;
-    const trackUris = playlistTracks.map((track) => track.uri);
-
+  savePlaylist() {
+    const trackUris = this.state.playlistTracks.map((track) => track.uri);
     if (!trackUris.length) {
       alert("Your playlist is empty! Please add tracks.");
       return;
     }
 
-    try {
-      await Spotify.savePlayList(playlistName, trackUris);
-      await this.getUserPlaylists();
+    Spotify.savePlayList(this.state.playlistName, trackUris).then(() => {
+      this.getUserPlaylists();
       this.setState({
         playlistName: "New Playlist Name",
         playlistTracks: [],
       });
-    } catch (error) {
-      console.error("Failed to save playlist:", error);
-      alert("There was an issue saving your playlist. Please try again.");
-    }
+    });
   }
 
   search(term) {
-    Spotify.search(term).then((results) => {
-      this.setState({ searchResults: results });
+    Spotify.search(term).then((searchResults) => {
+      this.setState({ searchResults });
     });
   }
 
@@ -125,7 +108,7 @@ class App extends React.Component {
             <SearchResults
               searchResults={searchResults}
               onAdd={this.addTrack}
-              onPlay={this.setPlayingTrack}
+              onPlay={this.setPlayingTrack} // ⬅️ pass play handler
             />
             <Playlist
               playlistName={playlistName}
@@ -136,8 +119,12 @@ class App extends React.Component {
             />
           </div>
           <PlaylistList playlists={playlists} />
+          {/* Render player if token and track are available */}
           {accessToken && currentlyPlayingUri && (
-            <SpotifyPlayer accessToken={accessToken} trackUri={currentlyPlayingUri} />
+            <SpotifyPlayer
+              accessToken={accessToken}
+              trackUri={currentlyPlayingUri}
+            />
           )}
         </div>
       </div>

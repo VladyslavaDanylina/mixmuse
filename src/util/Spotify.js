@@ -1,10 +1,11 @@
 let accessToken;
 let cachedUserId;
 
-const clientId = "2873a116bcf948b1975152029d117629";
-const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/";
-const scope = "streaming user-read-email user-read-private playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state";
+const clientId = "2873a116bcf948b1975152029d117629"; // Replace with your real client ID
+const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/"; // Must exactly match Spotify dashboard
+const scope = "playlist-modify-public";
 
+// Utilities
 function generateRandomString(length) {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const values = new Uint32Array(length);
@@ -23,6 +24,7 @@ function base64UrlEncode(buffer) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// Spotify object
 const Spotify = {
   async getAccessToken() {
     if (accessToken) return accessToken;
@@ -45,6 +47,7 @@ const Spotify = {
 
     const codeVerifier = localStorage.getItem("spotify_code_verifier");
     if (!codeVerifier) {
+      console.error("Missing code_verifier. Restarting auth flow.");
       window.location.href = redirectUri;
       return;
     }
@@ -83,74 +86,47 @@ const Spotify = {
     if (cachedUserId) return cachedUserId;
 
     const token = await this.getAccessToken();
-    if (!token) return null;
+    const response = await fetch("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    try {
-      const response = await fetch("https://api.spotify.com/v1/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await response.json();
-      cachedUserId = data.id;
-      return cachedUserId;
-    } catch (error) {
-      console.error("Error fetching user ID", error);
-      return null;
-    }
+    const data = await response.json();
+    cachedUserId = data.id;
+    return cachedUserId;
   },
 
   async getUserPlaylists() {
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
 
-    if (!token || !userId) {
-      console.error("Missing token or user ID for playlist fetch");
-      return [];
-    }
+    const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch playlists");
-
-      const json = await response.json();
-      return (json.items || []).map(p => ({
-        playlistName: p.name,
-        playlistId: p.id,
-      }));
-    } catch (error) {
-      console.error("Error fetching playlists", error);
-      return [];
-    }
+    const json = await response.json();
+    return (json.items || []).map(p => ({
+      playlistName: p.name,
+      playlistId: p.id,
+    }));
   },
 
   async search(term) {
     const token = await this.getAccessToken();
-    if (!token) return [];
 
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      const json = await response.json();
-      if (!json.tracks) return [];
+    const json = await response.json();
+    if (!json.tracks) return [];
 
-      return json.tracks.items.map(track => ({
-        id: track.id,
-        name: track.name,
-        artist: track.artists[0].name,
-        album: track.album.name,
-        uri: track.uri,
-        albumImage: track.album.images[0]?.url || '',
-        previewUrl: track.preview_url || '',
-      }));
-    } catch (error) {
-      console.error("Search failed", error);
-      return [];
-    }
+    return json.tracks.items.map(track => ({
+      id: track.id,
+      name: track.name,
+      artist: track.artists[0].name,
+      album: track.album.name,
+      uri: track.uri,
+    }));
   },
 
   async savePlayList(name, trackUris) {
@@ -158,41 +134,27 @@ const Spotify = {
 
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
-    if (!token || !userId) return;
 
-    try {
-      const playlists = await this.getUserPlaylists();
-      const existingPlaylist = playlists.find(p => p.playlistName === name);
+    const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name }),
+    });
 
-      let playlistId;
+    const playlist = await createRes.json();
+    const playlistId = playlist.id;
 
-      if (existingPlaylist) {
-        playlistId = existingPlaylist.playlistId;
-      } else {
-        const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name }),
-        });
-
-        const newPlaylist = await createRes.json();
-        playlistId = newPlaylist.id;
-      }
-
-      await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ uris: trackUris }),
-      });
-    } catch (error) {
-      console.error("Failed to save playlist", error);
-    }
+    await fetch(`https://api.spotify.com/v1/users/${userId}/playlists/${playlistId}/tracks`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uris: trackUris }),
+    });
   },
 };
 
