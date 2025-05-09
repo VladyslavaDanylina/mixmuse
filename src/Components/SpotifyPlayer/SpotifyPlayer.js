@@ -5,7 +5,6 @@ const SpotifyPlayer = ({ accessToken, trackUri }) => {
   const [player, setPlayer] = useState(null);
   const [volume, setVolume] = useState(0.5);
 
-  // Load Spotify Web Playback SDK
   useEffect(() => {
     if (window.Spotify) return;
 
@@ -19,7 +18,6 @@ const SpotifyPlayer = ({ accessToken, trackUri }) => {
     };
   }, []);
 
-  // Initialize player
   useEffect(() => {
     if (!accessToken || !window.Spotify || player) return;
 
@@ -54,7 +52,6 @@ const SpotifyPlayer = ({ accessToken, trackUri }) => {
     };
   }, [accessToken, volume, player]);
 
-  // Update volume if changed
   useEffect(() => {
     if (player) {
       player.setVolume(volume).catch((err) =>
@@ -63,13 +60,11 @@ const SpotifyPlayer = ({ accessToken, trackUri }) => {
     }
   }, [volume, player]);
 
-  // Transfer playback and play
   useEffect(() => {
     if (!deviceId || !trackUri || !accessToken) return;
 
     const play = async () => {
       try {
-        // Transfer playback
         await fetch("https://api.spotify.com/v1/me/player", {
           method: "PUT",
           headers: {
@@ -82,15 +77,17 @@ const SpotifyPlayer = ({ accessToken, trackUri }) => {
           }),
         });
 
-        // Play track
-        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ uris: [trackUri] }),
-        });
+        await fetch(
+          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ uris: [trackUri] }),
+          }
+        );
       } catch (err) {
         console.error("Playback error:", err);
       }

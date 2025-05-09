@@ -7,16 +7,12 @@ export default class PlaylistList extends React.Component {
     return (
       <div className="PlaylistList">
         <h2>Your Playlists</h2>
-        <>
-        {this.props.playlists && this.props.playlists.map((playlist) => {
-          return (
-            <PlaylistItem
-              name={playlist.playlistName}
-              key={playlist.playlistId}
-            />
-          );
-        })}
-        </>
+        {this.props.playlists?.map((playlist) => (
+          <PlaylistItem
+            key={playlist.playlistId}
+            name={playlist.playlistName}
+          />
+        ))}
       </div>
     );
   }
