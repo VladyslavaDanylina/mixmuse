@@ -1,11 +1,11 @@
 let accessToken;
 let cachedUserId;
 
-const clientId = "2873a116bcf948b1975152029d117629"; // Replace with your real client ID
-const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/"; // Must exactly match Spotify dashboard
+const clientId = "2873a116bcf948b1975152029d117629";
+const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/";
 const scope = "playlist-modify-public";
 
-// Utilities
+// PKCE helpers
 function generateRandomString(length) {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const values = new Uint32Array(length);
@@ -24,7 +24,6 @@ function base64UrlEncode(buffer) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-// Spotify object
 const Spotify = {
   async getAccessToken() {
     if (accessToken) return accessToken;
@@ -32,6 +31,7 @@ const Spotify = {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
 
+    // 1. If there's no code, start auth
     if (!code) {
       const codeVerifier = generateRandomString(128);
       localStorage.setItem("spotify_code_verifier", codeVerifier);
@@ -42,12 +42,13 @@ const Spotify = {
       const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
 
       window.location = authUrl;
-      return;
+      return; // Exit function while redirecting
     }
 
+    // 2. If redirected back with code, exchange it
     const codeVerifier = localStorage.getItem("spotify_code_verifier");
     if (!codeVerifier) {
-      console.error("Missing code_verifier. Restarting auth flow.");
+      console.error("Missing code_verifier. Restarting auth.");
       window.location.href = redirectUri;
       return;
     }
@@ -71,14 +72,20 @@ const Spotify = {
 
       if (data.access_token) {
         accessToken = data.access_token;
+
+        // Optional: Store for session reuse
         localStorage.removeItem("spotify_code_verifier");
-        window.history.replaceState({}, document.title, "/mixmuse");
+
+        // Remove code from URL
+        window.history.replaceState({}, document.title, redirectUri);
         return accessToken;
       } else {
-        console.error("Token exchange failed", data);
+        console.error("Token exchange failed:", data);
+        window.location.href = redirectUri;
       }
     } catch (error) {
-      console.error("Token request error", error);
+      console.error("Token request error:", error);
+      window.location.href = redirectUri;
     }
   },
 
@@ -86,9 +93,16 @@ const Spotify = {
     if (cachedUserId) return cachedUserId;
 
     const token = await this.getAccessToken();
+    if (!token) return;
+
     const response = await fetch("https://api.spotify.com/v1/me", {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    if (!response.ok) {
+      console.error("Failed to fetch user ID");
+      return;
+    }
 
     const data = await response.json();
     cachedUserId = data.id;
@@ -98,6 +112,7 @@ const Spotify = {
   async getUserPlaylists() {
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
+    if (!token || !userId) return [];
 
     const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -112,6 +127,7 @@ const Spotify = {
 
   async search(term) {
     const token = await this.getAccessToken();
+    if (!token) return [];
 
     const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -134,6 +150,7 @@ const Spotify = {
 
     const token = await this.getAccessToken();
     const userId = await this.getCurrentUserId();
+    if (!token || !userId) return;
 
     const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
       method: "POST",
