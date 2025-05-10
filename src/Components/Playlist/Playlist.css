@@ -7,6 +7,7 @@
   border-radius: 20px;
   max-height: 950px;
   padding: 1rem;
+  font-family: 'Work Sans', sans-serif;
   background-color: rgba(1, 63, 33, 0.356);
 }
 
@@ -33,6 +34,7 @@
   font-size: .83rem;
   transition: background-color .25s;
   color: #fff;
+  font-family: 'Work Sans', sans-serif;
   font-weight: 500;
 }
 

@@ -1,9 +1,10 @@
 .Track {
   display: flex;
-  align-items: flex-start; 
+  align-items: center; 
   justify-content: space-between;
   background: transparent;
   padding: 10px;
+  font-family: 'Work Sans', sans-serif;
   border-bottom: 1px solid #ffffff;
 }
 
@@ -16,6 +17,7 @@
   width: 60px;
   height: 60px;
   margin: 20px;
+  padding-top: 10px;
   object-fit: cover;
   border-radius: 4px;
 }
@@ -40,4 +42,10 @@
 .Track-play-button:hover,
 .Track-action:hover {
   color: #1db954; /* Spotify green */
+}
+.Track-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }

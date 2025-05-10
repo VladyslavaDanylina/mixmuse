@@ -1,28 +1,16 @@
 import React from "react";
 import "./Track.css";
 
-let globalAudio = new Audio();
-let currentPlayingTrackId = null;
-
 class Track extends React.Component {
   constructor(props) {
     super(props);
+    this.audioRef = React.createRef();
     this.state = {
       isPlaying: false,
     };
-
-    this.audio = null;
     this.addTrack = this.addTrack.bind(this);
     this.removeTrack = this.removeTrack.bind(this);
-    this.togglePreview = this.togglePreview.bind(this);
-    this.handleAudioEnd = this.handleAudioEnd.bind(this);
-  }
-
-  componentWillUnmount() {
-    if (this.state.isPlaying) {
-      globalAudio.pause();
-      currentPlayingTrackId = null;
-    }
+    this.togglePlay = this.togglePlay.bind(this);
   }
 
   addTrack() {
@@ -33,46 +21,51 @@ class Track extends React.Component {
     this.props.onRemove(this.props.track);
   }
 
-  togglePreview() {
-    const { previewUrl } = this.props.track;
+  togglePlay() {
+    const audio = this.audioRef.current;
+    if (!audio) return;
 
-    if (!previewUrl) return;
-
-    // Stop other track if this one isn't the current
-    if (currentPlayingTrackId !== this.props.track.id) {
-      globalAudio.src = previewUrl;
-      globalAudio.play();
-      globalAudio.onended = this.handleAudioEnd;
-
-      currentPlayingTrackId = this.props.track.id;
-      this.setState({ isPlaying: true });
+    if (this.state.isPlaying) {
+      audio.pause();
     } else {
-      if (this.state.isPlaying) {
-        globalAudio.pause();
-        this.setState({ isPlaying: false });
-      } else {
-        globalAudio.play();
-        this.setState({ isPlaying: true });
-      }
+      audio.play();
     }
-  }
 
-  handleAudioEnd() {
-    this.setState({ isPlaying: false });
-    currentPlayingTrackId = null;
+    this.setState((prev) => ({ isPlaying: !prev.isPlaying }));
   }
 
   renderAction() {
     return (
-      <button className="Track-action" onClick={this.props.isRemoval ? this.removeTrack : this.addTrack}>
+      <button
+        className="Track-action"
+        onClick={this.props.isRemoval ? this.removeTrack : this.addTrack}
+      >
         {this.props.isRemoval ? "-" : "+"}
       </button>
     );
   }
 
+  renderPlayButton() {
+    const { previewUrl } = this.props.track;
+
+    if (!previewUrl) return null;
+
+    return (
+      <>
+        <button
+          className="Track-play-button"
+          onClick={this.togglePlay}
+          title={this.state.isPlaying ? "Pause" : "Play"}
+        >
+          {this.state.isPlaying ? "⏸" : "▶️"}
+        </button>
+        <audio ref={this.audioRef} src={previewUrl} onEnded={() => this.setState({ isPlaying: false })} />
+      </>
+    );
+  }
+
   render() {
     const { name, artist, album, albumCover } = this.props.track;
-    const { previewUrl } = this.props.track;
 
     return (
       <div className="Track">
@@ -82,19 +75,20 @@ class Track extends React.Component {
               src={albumCover}
               alt={`${name} album cover`}
               className="Track-album-art"
+              style={{ width: "64px", height: "64px", marginRight: "10px" }}
             />
           )}
           <div className="Track-information">
             <h3>{name}</h3>
-            <p>{artist} | {album}</p>
-            {previewUrl && (
-              <button className="Track-play-button" onClick={this.togglePreview}>
-                {this.state.isPlaying ? "⏸" : "▶️"}
-              </button>
-            )}
+            <p>
+              {artist} | {album}
+            </p>
           </div>
         </div>
-        {this.renderAction()}
+        <div className="Track-buttons">
+          {this.renderPlayButton()}
+          {this.renderAction()}
+        </div>
       </div>
     );
   }

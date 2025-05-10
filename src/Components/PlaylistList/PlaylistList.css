@@ -4,6 +4,7 @@
   height: 250px;
   overflow-y: scroll;
   padding: 2rem 2rem;
+  font-family: 'Work Sans', sans-serif;
   background-color: rgba(1, 63, 33, 0.356);
 }
 
