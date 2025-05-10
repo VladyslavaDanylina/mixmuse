@@ -70,12 +70,16 @@ class Track extends React.Component {
     return (
       <div className="Track">
         <div className="Track-left">
+        <div className="Track-buttons">
+        {this.renderPlayButton()}
+        {this.renderAction()}
+        </div>
           {albumCover && (
             <img
               src={albumCover}
               alt={`${name} album cover`}
               className="Track-album-art"
-              style={{ width: "64px", height: "64px", marginRight: "10px" }}
+              style={{ width: "64px", height: "64px" }}
             />
           )}
           <div className="Track-information">
@@ -85,10 +89,8 @@ class Track extends React.Component {
             </p>
           </div>
         </div>
-        <div className="Track-buttons">
-          {this.renderPlayButton()}
-          {this.renderAction()}
-        </div>
+          
+        
       </div>
     );
   }
