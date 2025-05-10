@@ -23,6 +23,7 @@ class Track extends React.Component {
 
   togglePlay() {
     const audio = this.audioRef.current;
+
     if (!audio) return;
 
     if (this.state.isPlaying) {
@@ -31,7 +32,7 @@ class Track extends React.Component {
       audio.play();
     }
 
-    this.setState((prev) => ({ isPlaying: !prev.isPlaying }));
+    this.setState(prevState => ({ isPlaying: !prevState.isPlaying }));
   }
 
   renderAction() {
@@ -45,41 +46,18 @@ class Track extends React.Component {
     );
   }
 
-  renderPlayButton() {
-    const { previewUrl } = this.props.track;
-
-    if (!previewUrl) return null;
-
-    return (
-      <>
-        <button
-          className="Track-play-button"
-          onClick={this.togglePlay}
-          title={this.state.isPlaying ? "Pause" : "Play"}
-        >
-          {this.state.isPlaying ? "⏸" : "▶️"}
-        </button>
-        <audio ref={this.audioRef} src={previewUrl} onEnded={() => this.setState({ isPlaying: false })} />
-      </>
-    );
-  }
-
   render() {
-    const { name, artist, album, albumCover } = this.props.track;
+    const { name, artist, album, albumCover, previewUrl } = this.props.track;
 
     return (
       <div className="Track">
         <div className="Track-left">
-        <div className="Track-buttons">
-        {this.renderPlayButton()}
-        {this.renderAction()}
-        </div>
           {albumCover && (
             <img
               src={albumCover}
               alt={`${name} album cover`}
               className="Track-album-art"
-              style={{ width: "64px", height: "64px" }}
+              style={{ width: "64px", height: "64px", marginRight: "10px" }}
             />
           )}
           <div className="Track-information">
@@ -89,8 +67,26 @@ class Track extends React.Component {
             </p>
           </div>
         </div>
-          
-        
+
+        {/* Buttons and Audio */}
+        <div className="Track-buttons">
+          {previewUrl && (
+            <>
+              <button
+                className="Track-play-button"
+                onClick={this.togglePlay}
+              >
+                {this.state.isPlaying ? "⏸" : "▶️"}
+              </button>
+              <audio
+                ref={this.audioRef}
+                src={previewUrl}
+                onEnded={() => this.setState({ isPlaying: false })}
+              />
+            </>
+          )}
+          {this.renderAction()}
+        </div>
       </div>
     );
   }

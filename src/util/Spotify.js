@@ -139,6 +139,7 @@ const Spotify = {
         album: track.album.name,
         uri: track.uri,
         albumCover: track.album.images[0]?.url,
+        previewUrl: track.preview_url,
       }));
   },
 
@@ -160,6 +161,7 @@ const Spotify = {
       album: track.album.name,
       uri: track.uri,
       albumCover: track.album.images[0]?.url,
+      previewUrl: track.preview_url,
     }));
   },
 
@@ -198,7 +200,6 @@ const Spotify = {
     const token = await this.getAccessToken();
     if (!token) return;
 
-    // Update playlist name (optional)
     await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
       method: "PUT",
       headers: {
@@ -208,7 +209,6 @@ const Spotify = {
       body: JSON.stringify({ name }),
     });
 
-    // Replace tracks
     await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
       method: "PUT",
       headers: {
