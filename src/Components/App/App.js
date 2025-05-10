@@ -5,6 +5,7 @@ import SearchResults from "../SearchResults/SearchResults";
 import Playlist from "../Playlist/Playlist";
 import PlaylistList from "../PlaylistList/PlaylistList";
 import Spotify from "../../util/Spotify";
+import { initializePlayer, playTrack, transferPlaybackHere } from "../Player/Player";
 
 class App extends React.Component {
   constructor(props) {
@@ -26,25 +27,26 @@ class App extends React.Component {
     this.selectPlaylist = this.selectPlaylist.bind(this);
   }
 
-  componentDidMount() {
-    // Ensure user is authenticated and playlists are fetched
-    Spotify.getAccessToken().then(() => {
-      this.getUserPlaylists();
-    });
+  async componentDidMount() {
+    await Spotify.getAccessToken();
+    initializePlayer();
+
+    // Delay playback transfer to wait for device ID to be stored
+    setTimeout(async () => {
+      await transferPlaybackHere();
+    }, 1500);
+
+    this.getUserPlaylists();
   }
 
   getUserPlaylists() {
     Spotify.getUserPlaylists()
-      .then((playlists) => {
-        this.setState({ playlists });
-      })
-      .catch((err) => {
-        console.error("Failed to fetch playlists:", err);
-      });
+      .then((playlists) => this.setState({ playlists }))
+      .catch((err) => console.error("Failed to fetch playlists:", err));
   }
 
   selectPlaylist(playlistId) {
-    const selected = this.state.playlists.find(p => p.playlistId === playlistId);
+    const selected = this.state.playlists.find((p) => p.playlistId === playlistId);
     if (!selected) return;
 
     Spotify.getPlaylistTracks(playlistId)
@@ -55,14 +57,11 @@ class App extends React.Component {
           playlistTracks: tracks,
         });
       })
-      .catch((err) => {
-        console.error("Failed to load selected playlist tracks:", err);
-      });
+      .catch((err) => console.error("Failed to load selected playlist tracks:", err));
   }
 
   addTrack(track) {
-    if (this.state.playlistTracks.find(t => t.id === track.id)) return;
-
+    if (this.state.playlistTracks.find((t) => t.id === track.id)) return;
     this.setState((prevState) => ({
       playlistTracks: [...prevState.playlistTracks, track],
     }));
@@ -70,7 +69,7 @@ class App extends React.Component {
 
   removeTrack(track) {
     this.setState((prevState) => ({
-      playlistTracks: prevState.playlistTracks.filter(t => t.id !== track.id),
+      playlistTracks: prevState.playlistTracks.filter((t) => t.id !== track.id),
     }));
   }
 
@@ -100,28 +99,17 @@ class App extends React.Component {
           selectedPlaylistId: null,
         });
       })
-      .catch((err) => {
-        console.error("Error saving/updating playlist:", err);
-      });
+      .catch((err) => console.error("Error saving/updating playlist:", err));
   }
 
   search(term) {
     Spotify.search(term)
-      .then((searchResults) => {
-        this.setState({ searchResults });
-      })
-      .catch((err) => {
-        console.error("Search error:", err);
-      });
+      .then((searchResults) => this.setState({ searchResults }))
+      .catch((err) => console.error("Search error:", err));
   }
 
   render() {
-    const {
-      searchResults,
-      playlistName,
-      playlistTracks,
-      playlists,
-    } = this.state;
+    const { searchResults, playlistName, playlistTracks, playlists } = this.state;
 
     return (
       <div>

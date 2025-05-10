@@ -3,7 +3,8 @@ let cachedUserId;
 
 const clientId = "2873a116bcf948b1975152029d117629";
 const redirectUri = "https://vladyslavadanylina.github.io/mixmuse/";
-const scope = "playlist-modify-public";
+const scope = "streaming user-read-email user-read-private playlist-modify-public";
+
 
 // PKCE helpers
 function generateRandomString(length) {
