@@ -1,4 +1,4 @@
-import Spotify from './Spotify'; // Make sure this path is correct
+import Spotify from "../../util/Spotify";
 
 let player;
 

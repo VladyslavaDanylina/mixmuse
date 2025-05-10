@@ -5,7 +5,7 @@ import SearchResults from "../SearchResults/SearchResults";
 import Playlist from "../Playlist/Playlist";
 import PlaylistList from "../PlaylistList/PlaylistList";
 import Spotify from "../../util/Spotify";
-import { initializePlayer, playTrack, transferPlaybackHere } from "../Player/Player";
+import { initializePlayer, transferPlaybackHere } from "../Player/Player";
 
 class App extends React.Component {
   constructor(props) {
