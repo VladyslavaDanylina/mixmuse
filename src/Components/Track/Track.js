@@ -29,6 +29,7 @@ class Track extends React.Component {
 
     return (
       <div className="Track">
+        <div className="Track-left">
         {albumCover && (
           <img
             src={albumCover}
@@ -46,6 +47,7 @@ class Track extends React.Component {
               Your browser does not support the audio element.
             </audio>
           )}
+        </div>
         </div>
         {this.renderAction()}
       </div>

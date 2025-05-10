@@ -1,6 +1,6 @@
 .Track {
   display: flex;
-  align-items: center;
+  align-items: flex-start; 
   justify-content: space-between;
   background: transparent;
   padding: 10px;
@@ -9,7 +9,7 @@
 
 .Track-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .Track-album-art {
