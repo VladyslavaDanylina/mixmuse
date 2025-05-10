@@ -131,7 +131,7 @@ const Spotify = {
     if (!data.items) return [];
 
     return data.items
-      .filter(item => item.track)
+      .filter(item => item.track && item.track.preview_url)
       .map(({ track }) => ({
         id: track.id,
         name: track.name,
@@ -154,15 +154,17 @@ const Spotify = {
     const json = await response.json();
     if (!json.tracks) return [];
 
-    return json.tracks.items.map(track => ({
-      id: track.id,
-      name: track.name,
-      artist: track.artists[0].name,
-      album: track.album.name,
-      uri: track.uri,
-      albumCover: track.album.images[0]?.url,
-      previewUrl: track.preview_url,
-    }));
+    return json.tracks.items
+      .filter(track => track.preview_url)
+      .map(track => ({
+        id: track.id,
+        name: track.name,
+        artist: track.artists[0].name,
+        album: track.album.name,
+        uri: track.uri,
+        albumCover: track.album.images[0]?.url,
+        previewUrl: track.preview_url,
+      }));
   },
 
   async savePlayList(name, trackUris) {
